@@ -1,16 +1,17 @@
 const Event = require('../models').Event
+const sequelize = require('sequelize')
+const Op = sequelize.Op
 
 module.exports = {
-    async create(req, res) {
-        let user_id = await id.id
-
+    create(req, res) {
+        let user_id = id
         return Event
             .create({
                 title: req.body.title,
                 desc: req.body.desc,
                 category: req.body.category,
                 date: req.body.date,
-                UserId: user_id
+                UserId: user_id.id
             })
             .then((data) => {
                 res.status(200).send({
@@ -62,5 +63,36 @@ module.exports = {
                 message: 'Data not found'
             })
         })
-    }   
+    },
+    
+    findByName(req, res) {
+        return Event
+            .findAll({
+                where: {
+                    title: {
+                        [Op.like]: `%${req.query.title}%`
+                    }
+                }
+            })
+            .then((data) => {
+                if (data.length == 0) {
+                    res.send({
+                        message: 'Data Kosong'
+                    })
+                } else {
+                    res.send({
+                        status: 200,
+                        message: 'Berhasil Ditemukan',
+                        result: data
+    
+                    })
+                }
+            })
+            .catch((error) => {
+                res.send({
+                    status: 500,
+                    message: 'Internal Server Error!'
+                })
+            })
+    }
 }
