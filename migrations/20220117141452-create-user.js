@@ -21,7 +21,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       photo: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        defaultValue: 'https://www.its.ac.id/international/wp-content/uploads/sites/66/2020/02/blank-profile-picture-973460_1280-1-300x300.jpg'
       },
       isActive: {
         type: Sequelize.BOOLEAN,

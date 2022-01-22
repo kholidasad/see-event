@@ -1,33 +1,34 @@
-const jwt = require('jsonwebtoken')
-
-const privateKey = process.env.SECRET || 'wakswaks'
-
-const verify = async (req, res, next) => {
-    const token = req.headers['auth']
-
-    if(!token) {
-        return res.status(401).send({
-            message: 'Forbidden'
-        })
-    }
-    
-    jwt.verify(token, privateKey, (err, decoded) => {
-        if (err) {
-            return res.status(401).send({
-                message: 'Token Invalid'
-            })
-        } 
-
-        id = decoded
-        next()
-    })
-},
-
-const generate = (payload) => {
-    return jwt.sign(payload, privateKey)
-}
+const User = require('../models').User
+const { verifyToken } = require('../utils/jwt')
 
 module.exports = {
-    verify,
-    generate
+    isLogin: async (req, res, next) => {
+        try {
+            let token = req.header("Authorization").split(' ')
+            // cek token
+            if (!token) {
+                return res.status(401).json({
+                    msg: "Please log in.",
+                    status: "Unauthorized",
+                })
+            }
+            const decoded = verifyToken(token[1], process.env.JWT_KEY)
+
+            const user = await User.findByPk(decoded.id)
+            if (!user) {
+                return res.status(401).json({
+                    msg: "User not found.",
+                    status: "Unauthorized",
+                })
+            }
+        
+            req.id = decoded.id
+            next()
+        }
+        catch (error) {
+            res.status(500).json({
+            status: "Internal server error",
+            message: error.message,})
+        }
+    }
 }

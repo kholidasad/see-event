@@ -1,73 +1,107 @@
-const User = require('../models').User
-const bcrypt = require('bcrypt')
-const {generate} = require('../middleware/auth')
+const joi = require("joi");
+const { User } = require("../models");
+const { hashPassword, comparePassword } = require("../utils/bcrypt");
+const { generateToken } = require("../utils/jwt");
 
 module.exports = {
-    async register(req, res) {
-        await User.findOne({ 'email' : req.body.email }).then(async data => {
-            if (data == 0) {
-                const hashedPass = await bcrypt.hash(req.body.password, 10)
-                return User.create({
-                    firstName: req.body.firstName,
-                    lastName: req.body.lastName,
-                    email: req.body.email,
-                    password: hashedPass,
-                    photo: 'waks'
-                })
-                .then((hasil) => res.status(200).send({
-                    status: 200,
-                    message: 'Register Success',
-                    result: hasil,
-                    token: generate({
-                        firstName: req.body.firstName,
-                        lastName: req.body.lastName,
-                        email: req.body.email,
-                    })
-                }))
-                .catch((err) => res.status(500).send({
-                    status: 500,
-                    message: 'Internal Server Error!'
-                }))
-            } else {
-                return res.status(400).send({
-                    status: 400,
-                    message: 'Email already exist!'
-                })
-            }
-        })
-    },
+  register: async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
+    try {
+      const schema = joi.object({
+        firstName: joi.string().required(),
+        lastName: joi.string().required(),
+        email: joi.string().email().required(),
+        password: joi.string().required(),
+      });
 
-    async login (req, res) {
-        const samePassword = await bcrypt.compareSync(req.body.password, findEmail.password)
-        User.findOne({
-            where: {
-                email: req.body.email
-            }
-        })
-        .then((data) => {
-            if (!data || !samePassword) {
-                return res.status(400).send({
-                    error: 'ERRROR',
-                    status: 400,
-                    message: 'Email and Password mismatch!'
-                })
-            } 
+      const { error } = schema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          message: error.message,
+          status: "Bad Request",
+        });
+      }
 
-            res.status(200).send({
-                status: 200,
-                message: 'Login Success!',
-                token: generate({
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    email: data.email,
-                })
-            })
-        })
-        .catch(err => {
-            res.status(500).send({
-                status: 500,
-                message: 'Internal Server Error!'
-            })
-        })
+      const check = await User.findOne({
+        where: { email },
+      });
+
+      if (check) {
+        return res.status(400).json({
+          message: "Email is Already in Use",
+          status: "Bad Request",
+        });
+      }
+
+      const passwordHashed = hashPassword(password);
+
+      const user = await User.create({
+        firstName,
+        lastName,
+        email,
+        password: passwordHashed,
+      });
+
+      const token = generateToken({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      });
+
+      res.status(200).json({
+        message: "Register Success",
+        status: "OK",
+        result: { token },
+      });
+    } catch (error) {
+      res.status(500).json({
+      status: "Internal server error",
+      message: error.message,
+    });
     }
-}
+  },
+
+  login: async (req, res) => {
+    const { email, password } = req.body;
+    try {
+      const schema = joi.object({
+        email: joi.string().email().required(),
+        password: joi.string().required(),
+      });
+
+      const { error } = schema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          message: error.message,
+          status: "Bad Request",
+        });
+      }
+
+      const user = await User.findOne({where: {email}});
+      const checkValid = comparePassword(password, user.password);
+      if (!user || !checkValid) {
+        return res.status(401).json({
+          message: "Username or Password Incorrect",
+          status: "Unauthorized",
+        });
+      }
+
+      const token = generateToken({
+        id: user.id,
+        email: user.email,
+      });
+
+      res.status(200).json({
+        message: "Login Success",
+        status: "OK",
+        result: { token },
+      });
+    } catch (error) {
+      res.status(500).json({
+      status: "Internal server error",
+      message: error.message,
+    });
+    }
+  },
+};

@@ -1,17 +1,24 @@
 const express = require('express')
-const { route } = require('express/lib/application')
 const router = express.Router()
 const Auth = require('../controllers/AuthController')
 const Event = require('../controllers/EventController')
-const {verify} = require('../middleware/auth')
+const Comment = require('../controllers/CommentController')
+const {isLogin} = require('../middleware/auth')
+const upload = require("../middleware/multer")
 
-//login 
 router.post('/register', Auth.register)
 router.post('/login', Auth.login)
 
-//event
-router.post('/api/v1/event', verify, Event.create)
-router.get('/api/v1/event', Event.index)
-route.get('/api/v1/event/search', Event.search)
+router.post('/event', isLogin, upload.single("image"), Event.createEvent)
+router.get('/event', Event.getEvents)
+router.get('/event/detail/:eventId', Event.getEvent)
+router.put('/event/detail/:eventId', isLogin, upload.single("image"), Event.updateEvent)
+router.delete('/event/:eventId', isLogin, Event.deleteEvent)
+router.get('/event/search', Event.findByName)
+router.get("/event/filter", Event.filter)
+
+router.post('/event/detail/:eventId', isLogin, Comment.postComment)
+
+// router.post()
 
 module.exports = router

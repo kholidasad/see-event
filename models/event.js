@@ -11,15 +11,15 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.User, { foreignKey: "UserId" })
-      // this.belongsToMany(models.Event, { through: 'Comment', foreignKey: 'event_id'})
+      this.belongsTo(models.User, { foreignKey: "user_id" })
     }
   }
   Event.init({
     title: DataTypes.STRING,
-    desc: DataTypes.TEXT,
-    category: DataTypes.ENUM(['Photography', 'Develop', 'Design']),
-    date: DataTypes.DATE
+    description: DataTypes.TEXT,
+    category: DataTypes.ENUM(['Photography', 'Development', 'Design', 'Marketing', 'Business', 'Lifestyle', 'Music']),
+    date: DataTypes.DATE,
+    image: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Event',

@@ -11,14 +11,17 @@ module.exports = {
       title: {
         type: Sequelize.STRING
       },
-      desc: {
+      description: {
         type: Sequelize.TEXT
       },
       category: {
-        type: Sequelize.ENUM(['Photography', 'Develop', 'Design'])
+        type: Sequelize.ENUM(['Photography', 'Development', 'Design', 'Marketing', 'Business', 'Lifestyle', 'Music'])
       },
       date: {
         type: Sequelize.DATE
+      },
+      image: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
