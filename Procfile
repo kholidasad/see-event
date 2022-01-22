@@ -1,3 +1,1 @@
-release: npm run heroku-release;
-
-web: node app.js
+web: node app.js && npx sequelize db:migrate:all
