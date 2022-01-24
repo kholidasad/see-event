@@ -1,9 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const eventRoutes = require("./event_routes")
-const authRoutes = require('./auth-route')
+const Event = require('../controllers/EventController')
 
-router.use('/auth', authRoutes)
-router.use("/events", eventRoutes)
+router.get('/event/search', Event.findByName)
 
 module.exports = router
