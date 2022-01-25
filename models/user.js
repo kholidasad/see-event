@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Event, { foreignKey: "user_id" })
       this.belongsToMany(models.Event, {
         through: 'Comment',
-        as: 'comment',
+        as: 'events',
         foreignKey: 'user_id'
       })
       this.belongsToMany(models.Event, {
