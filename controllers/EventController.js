@@ -2,7 +2,7 @@ const sequelize = require('sequelize')
 const Op = sequelize.Op
 const Event = require('../models').Event
 
-module.exports = {
+mgitodule.exports = {
     async findByName(req, res) {
         const findEvent = await Event
             .findAll({
