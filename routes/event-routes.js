@@ -1,6 +1,6 @@
 const express = require("express")
 const router = express.Router()
-const { createEvent, getEvents, getEvent, updateEvent, deleteEvent, findByName, filterEvents} = require("../controllers/eventController")
+const { createEvent, getEvents, getEvent, updateEvent, deleteEvent, findByName, filterEvents} = require("../controllers/EventController")
 const { postComment } = require('../controllers/CommentController')
 const upload = require("../middleware/multer")
 const { isLogin } = require('../middleware/auth')
