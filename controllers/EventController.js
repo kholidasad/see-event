@@ -99,11 +99,22 @@ const eventController = {
     getEvent: async (req,res)=>{
         let token = req.header("Authorization")
         let decoded = null
-        let isBookmark
+        let isBookmark = null
         
         if (token) {
           token = token.split(' ')
           decoded = verifyToken(token[1], process.env.JWT_KEY)
+          var findBookmark = await Bookmark.findOne({
+            where: {
+              event_id: eventId,
+              user_id: decoded.id
+            }
+          })
+          if(findBookmark) {
+            isBookmark = true
+          } else {
+            isBookmark = false
+          }
         } 
 
         const {eventId} = req.params
@@ -128,18 +139,7 @@ const eventController = {
                 })
             }
 
-            const findBookmark = await Bookmark.findOne({
-              where: {
-                event_id: eventId,
-                user_id: decoded.id
-              }
-            })
-
-            if(findBookmark) {
-              isBookmark = true
-            } else {
-              isBookmark = false
-            }
+            
 
             res.status(200).json({
                 status: "success",
