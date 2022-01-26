@@ -1,5 +1,6 @@
 const joi = require('joi')
 const catchHandler = require("../utils/catchHandler")
+const { hashPassword } = require('../utils/bcrypt')
 const Bookmark = require('../models').Bookmark
 const User = require('../models').User
 
@@ -30,6 +31,8 @@ module.exports = {
             if (req.file) {
                 body.photo = req.file.path
             }
+
+            body.password = hashPassword(password);
 
             const upProfile = await User.update(body, {
                 where: {
