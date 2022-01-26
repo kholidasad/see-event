@@ -18,6 +18,6 @@ app.get("/", (req, res)=>{
 
 app.use('/api/v1', router)
 
-app.listen(port, () => {
-    console.log(`Server Listen on Port: ${port}`);
-})
+app.listen(port)
+
+module.exports = app
