@@ -11,7 +11,7 @@ module.exports = {
         firstName: joi.string().required(),
         lastName: joi.string().required(),
         email: joi.string().email().required(),
-        password: joi.string().required(),
+        password: joi.string().min(6).max(16).required(),
       });
 
       const { error } = schema.validate(req.body);
@@ -90,6 +90,9 @@ module.exports = {
       const token = generateToken({
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        photo: user.photo
       });
 
       res.status(200).json({

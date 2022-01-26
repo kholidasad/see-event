@@ -21,16 +21,19 @@ module.exports = {
                     status: "Unauthorized",
                 })
             }
-            res.status(200).json({
-                msg: "Successfully logged in.",
-                status: "Success",
-            })
+
+            // res.status(200).json({
+            //     msg: "Successfully logged in.",
+            //     status: "Success",
+            // })
+            
+            req.id = decoded.id
             next()
         }
         catch (error) {
-            res.status(500).json({
-            status: "Internal server error",
-            message: error.message,})
+            res.status(401).json({
+            status: "Unauthorized",
+            message: "Please log in.",})
         }
     }
 }

@@ -1,8 +1,8 @@
 {
   "development": {
     "username": "postgres",
-    "password": null,
-    "database": "mini-project",
+    "password": "123",
+    "database": "be-teamc",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
@@ -14,10 +14,13 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "use_env_variable": "DATABASE_URL",
+    "dialect": "postgres",
+    "protocol": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "rejectUnauthorized": false
+      }
+    }
   }
 }

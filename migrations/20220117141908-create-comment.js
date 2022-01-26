@@ -9,10 +9,22 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       event_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'Events'
+          },
+          key: 'id'
+        }
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'Users'
+          },
+          key: 'id'
+        }
       },
       description: {
         type: Sequelize.STRING

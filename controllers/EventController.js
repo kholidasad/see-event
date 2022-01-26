@@ -4,12 +4,15 @@ const User = require("../models").User
 const sequelize = require('sequelize')
 const Op = sequelize.Op
 const Event = require('../models').Event
+const Bookmark = require('../models').Bookmark
 const moment = require("moment");
+const { verifyToken } = require('../utils/jwt')
 
 const eventController = {
     createEvent: async (req,res)=>{
         const body = req.body
         const file = req.file
+        let user_id = req.id
 
         try {
             const schema = joi.object({
@@ -18,7 +21,7 @@ const eventController = {
                 category: joi.required(), //enum
                 date: joi.date().required(), //date
                 image: joi.string(),
-                user_id: joi.number().required()
+                // user_id: joi.number().required()
             })
             const {error} = schema.validate({
                 ...body,
@@ -32,7 +35,7 @@ const eventController = {
                 })
             }
 
-            const event = await Event.create({...body, image: file.path})
+            const event = await Event.create({...body, image: file.path, user_id: user_id})
             if(!event){
                 return res.status(500).json({
                     status: "Internal Server Error",
@@ -53,15 +56,23 @@ const eventController = {
     },
 
     getEvents: async (req,res)=> {
-        try {
-            const event = await Event.findAll({
-                limit: 15,
-                order: [["date", "DESC"]],
-                include: {
-                            model: User,
-                            as: "comment",
-                            attributes: {
-                            exclude: ["updatedAt", "createdAt"],
+      try {
+        let token = req.header("Authorization")
+        let decoded = null
+        
+        if (token) {
+          token = token.split(' ')
+          decoded = verifyToken(token[1], process.env.JWT_KEY)
+        } 
+
+        const event = await Event.findAll({
+            // limit: 15, //kenapa di limit
+            order: [["date", "DESC"]],
+            include: {
+                        model: User,
+                        as: "information",
+                        attributes: {
+                            exclude: ["email", "password", "updatedAt", "createdAt"],
                             },
                         }
             })
@@ -77,7 +88,8 @@ const eventController = {
             res.status(200).json({
                 status: "success",
                 message: "Events successfully retrieved",
-                result: event
+                result: event,
+                userLogin: decoded
             })
         } catch (error) {
             catchHandler(res,error)
@@ -85,16 +97,29 @@ const eventController = {
     },
 
     getEvent: async (req,res)=>{
+        let token = req.header("Authorization")
+        let decoded = null
+        let isBookmark
+        
+        if (token) {
+          token = token.split(' ')
+          decoded = verifyToken(token[1], process.env.JWT_KEY)
+        } 
+
         const {eventId} = req.params
         try {
-            const event = await Event.findOne({eventId, 
-                include: {
-                            model: User,
-                            as: "comment",
-                            attributes: {
-                            exclude: ["updatedAt", "createdAt"],
+          const event = await Event.findOne({
+              where: {
+                  id: eventId
+              },
+              include: {
+                          model: User,
+                          as: "information",
+                          attributes: {
+                              exclude: ["email", "password", "updatedAt", "createdAt"],
                             },
-                        }})
+                        },
+                      })
             if(!event){
                 return res.status(404).json({
                     status: "Not Found",
@@ -103,10 +128,25 @@ const eventController = {
                 })
             }
 
+            const findBookmark = await Bookmark.findOne({
+              where: {
+                event_id: eventId,
+                user_id: decoded.id
+              }
+            })
+
+            if(findBookmark) {
+              isBookmark = true
+            } else {
+              isBookmark = false
+            }
+
             res.status(200).json({
                 status: "success",
                 message: "successfully retrieved",
-                result: event
+                result: event,
+                bookmarkByUser: isBookmark
+          
             })
         } catch (error) {
             catchHandler(res,error)
@@ -126,8 +166,8 @@ const eventController = {
                 image: joi.string(),
                 user_id: joi.number()
             })
-            console.log(req.file);
-            const {error} = schema.validate({...body, image: file.path})
+            // console.log(req.file);
+            const {error} = schema.validate({...body})
             if(error){
                 return res.status(400).json({
                     status: "Bad Request",
@@ -135,12 +175,12 @@ const eventController = {
                     result: {}
                 })
             }
-            console.log(req.file);
+            // console.log(req.file);
             if(req.file){
                 body.image = req.file.path
             }
 
-            const checkUpdate = await Event.update(...body,{
+            const checkUpdate = await Event.update(body,{
                 where: {
                     id: eventId
                 }
@@ -271,7 +311,7 @@ const eventController = {
               category: category,
             };
           }
-          console.log(categoryQuery);
+          // console.log(categoryQuery);
     
           // sort pagination
           if (!page) {
@@ -286,9 +326,9 @@ const eventController = {
             limitData = 8;
           }
     
-          const events = await Events.findAndCountAll({
+          const events = await Event.findAndCountAll({
             limit: limitData,
-            offset: [(page - 1) * limitData],
+            offset: (page - 1) * limitData,
             order: [sort],
             where: {
               ...dateRange,
@@ -308,7 +348,7 @@ const eventController = {
             status: "OK",
             message: "Successfuly retrieve data",
             result: events,
-            totalPage: Math.ceil(events.count / limit),
+            totalPage: Math.ceil(events.count / limitData),
           });
         } catch (error) {
           catchHandler(res, error);
