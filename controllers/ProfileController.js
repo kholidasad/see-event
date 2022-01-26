@@ -32,7 +32,9 @@ module.exports = {
                 body.photo = req.file.path
             }
 
-            body.password = hashPassword(password);
+            if (req.body.password) {
+                body.password = hashPassword(password);
+            }
 
             const upProfile = await User.update(body, {
                 where: {
