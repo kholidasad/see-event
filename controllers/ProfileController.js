@@ -13,7 +13,7 @@ module.exports = {
             const schema = await joi.object({
                 firstName: joi.string(),
                 lastName: joi.string(),
-                email: joi.email().string(),
+                email: joi.string().email(),
                 password: joi.string().min(6).max(16),
                 image: joi.string()
             })
