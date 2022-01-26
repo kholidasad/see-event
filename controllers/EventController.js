@@ -100,6 +100,7 @@ const eventController = {
         let token = req.header("Authorization")
         let decoded = null
         let isBookmark = null
+        const {eventId} = req.params
         
         if (token) {
           token = token.split(' ')
@@ -117,7 +118,6 @@ const eventController = {
           }
         } 
 
-        const {eventId} = req.params
         try {
           const event = await Event.findOne({
               where: {
