@@ -63,7 +63,9 @@ const eventController = {
         if (token) {
           token = token.split(' ')
           decoded = verifyToken(token[1], process.env.JWT_KEY)
-        } 
+        } else if (req.query.token){
+          decoded = verifyToken(req.query.token, process.env.JWT_KEY)
+        }
 
         const event = await Event.findAll({
             // limit: 15, //kenapa di limit
@@ -239,14 +241,11 @@ const eventController = {
           // sort by date
           let sort;
           switch (order) {
-            case "old":
-              sort = ["createdAt", "ASC"];
-              break;
             case "name":
               sort = ["title", "ASC"];
               break;
             default:
-              sort = ["createdAt", "DESC"];
+              sort = ["date", "DESC"];
               break;
           }
     
@@ -314,8 +313,11 @@ const eventController = {
           // console.log(categoryQuery);
     
           // sort pagination
+          let pagedata
           if (!page) {
-            page - 1;
+            pagedata = 1;
+          } else {
+            pagedata = Number(page)
           }
     
           // limit data
@@ -328,7 +330,7 @@ const eventController = {
     
           const events = await Event.findAndCountAll({
             limit: limitData,
-            offset: (page - 1) * limitData,
+            offset: (pagedata - 1) * limitData,
             order: [sort],
             where: {
               ...dateRange,

@@ -3,8 +3,44 @@ const catchHandler = require("../utils/catchHandler")
 const { hashPassword } = require('../utils/bcrypt')
 const Bookmark = require('../models').Bookmark
 const User = require('../models').User
+const Event = require('../models').Event
 
 module.exports = {
+    async getProfile(req, res) {
+        let user_id = req.id
+
+        try {
+            const getUserProfile = await User.findOne({
+                where: {
+                    id: user_id
+                },
+                include: [{
+                    model: Event,
+                    as: 'bookmark',
+                    attribute: {
+                        exclude: ['created_at', 'updated_at']
+                    }
+                },
+                {
+                    model: Event,
+                    as: 'event_user',
+                    attribute: {
+                        exclude: ['created_at', 'updated_at']
+                    }
+                }
+            ]
+            })
+            
+            res.status(200).json({
+                status: "success",
+                message: "successfully retrieved",
+                result: getUserProfile
+            })
+        } catch (error) {
+            catchHandler(res, error)
+        }
+    },
+
     async updateProfile(req, res) {
         let user_id = req.id
         const body = req.body
