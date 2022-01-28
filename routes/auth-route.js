@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require('passport')
-const { register, login } = require("../controllers/AuthController");
+const { register, login, facebookCallback } = require("../controllers/AuthController");
 const {generateToken} = require('../utils/jwt')
 require('../middleware/passport')
 
@@ -12,7 +12,6 @@ router.get('/google', passport.authenticate('google', {
     scope: ['email', 'profile'],
     session: false
 }))
-
 
 router.get('/google/callback', passport.authenticate(
     'google', 
@@ -29,5 +28,13 @@ router.get('/google/callback', passport.authenticate(
         }))
     }
 )
+
+router.get('/facebook', passport.authenticate('facebook', {
+    scope: ['email'],
+    session: false
+}))
+
+router.get('/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/login', session: false }), facebookCallback)
 
 module.exports = router;

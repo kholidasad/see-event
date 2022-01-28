@@ -107,4 +107,35 @@ module.exports = {
     });
     }
   },
+
+  facebookCallback : async (req,res) => {
+    const profile = req.user._json
+    // console.log(profile)
+    let user
+    try {
+      console.log(profile.name)
+      user = await User.findOne({where :{email:profile.email}});
+      // console.log(user)
+      if (!user){
+        user = await User.create({
+          email : profile.email,
+          firstName: profile.name,
+          lastName: "",
+          photo: profile.picture.data.url
+        })
+      }
+      // console.log(user);
+      const token = generateToken({
+        id: user.id,
+        photo: user.photo,
+        firstName: user.firstName,
+        lastName: user.lastName
+      });
+      res.redirect("/api/v1/event?token=" + token)
+    } catch (error) {
+      res.status(500).json({
+      status: "Internal server error",
+      message: error.message,
+    })}
+  }
 };
